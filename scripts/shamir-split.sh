@@ -1,5 +1,6 @@
 #!/bin/bash
-cd $HOME
+
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # capture parameters
 while [ $# -gt 0 ]; do
@@ -21,16 +22,16 @@ fi
 
 # split key to shares and test the shares can be combined back
 # default 2-3 scheme
-shares=$(cat $sek | ./go-shamir/bin/shamir  split -t 2 -p 3)
+shares=$(cat $sek | $SCRIPTPATH/../tools/shamir  split -t 2 -p 3)
 readarray -t SHARE_ARR <<< "$shares"
 arraylength=${#SHARE_ARR[@]}
 for ((i=0; i<${arraylength}; i++)); do              
   for ((j=${i}+1; j<${arraylength}; j++)); do         
     
-    target=$(cat tss_service_key)
+    target=$(cat $sek)
     echo ${SHARE_ARR[i]} > testTemp
     echo ${SHARE_ARR[j]} >> testTemp
-    recontruct=$(./go-shamir/bin/shamir combine < testTemp)
+    recontruct=$($SCRIPTPATH/../tools/shamir combine < testTemp)
 
     if [[ "$recontruct" != "$target" ]];
     then
